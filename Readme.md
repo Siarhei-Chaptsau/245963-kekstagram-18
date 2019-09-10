@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url]
 
 * Студент: [Siarhei Chaptsau](https://up.htmlacademy.ru/javascript/18/user/245963).
-* Наставник: `Неизвестно`.
+* Наставник: `Кексобот`.
 
 ---
 
