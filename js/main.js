@@ -79,7 +79,7 @@ for (var j = 0; j < pictures.length; j++) {
 locationOfPicture.appendChild(fragment);
 
 var bigPicture = document.querySelector('.big-picture');
-bigPicture.classList.remove('hidden');
+// bigPicture.classList.remove('hidden'); TODO
 
 // функция для создания DOM-элемента комментария согласно html-разметке
 var createComment = function (el) {
@@ -117,8 +117,78 @@ var setItem = function (oldItem, newItem) {
   oldItem.querySelector('.social__comments').appendChild(fragmentForСomments);
 };
 
-// переопределяем атрибутыглавное картинки на 1й элемент массива
+// переопределяем атрибуты для главной картинки на 1й элемент массива
 setItem(bigPicture, pictures[0]);
 
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
 document.querySelector('.comments-loader').classList.add('visually-hidden');
+
+var ESC_KEYCODE = 27;
+var ENTER_KEYCODE = 13;
+// var START_X_PIN_LEVEL = 600;
+// var END_X_PIN_LEVEL = 1050;
+
+var uploadOverlay = document.querySelector('.img-upload__overlay');
+var uploadFile = document.querySelector('#upload-file');
+var btnUploadCancel = document.querySelector('.img-upload__cancel');
+var pinLevelEffect = document.querySelector('.effect-level__pin');
+var pinLevelValue = document.querySelector('.effect-level__value');
+var effectsItem = document.querySelectorAll('.effects__item');
+
+// var scaleSmallerButton = document.querySelector('.scale__control--smaller');
+// var scaleBiggerButton = document.querySelector('.scale__control--bigger');
+// var effectsList = document.querySelector('.effects__list');
+// var noneEffect = effectsList.querySelector('#effect-none');
+// var chromeEffect = effectsList.querySelector('#effect-chrome');
+// var sepiaEffect = effectsList.querySelector('#effect-sepia');
+// var marvinEffect = effectsList.querySelector('#effect-marvin');
+// var phobosEffect = effectsList.querySelector('#effect-phobos');
+// var heatEffect = effectsList.querySelector('#effect-heat');
+//
+// var inputHashtags = document.querySelector('.text__hashtags');
+
+var onPopupEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closePopup();
+  }
+};
+
+var openPopup = function () {
+  uploadOverlay.classList.remove('hidden');
+  document.addEventListener('keydown', onPopupEscPress);
+};
+
+var closePopup = function () {
+  uploadOverlay.classList.add('hidden');
+  document.removeEventListener('keydown', onPopupEscPress);
+  uploadFile.value = '';
+};
+
+uploadFile.addEventListener('change', function () {
+  openPopup();
+});
+
+btnUploadCancel.addEventListener('click', function () {
+  closePopup();
+});
+
+btnUploadCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_KEYCODE) {
+    closePopup();
+  }
+});
+
+window.pinLevel = pinLevelValue.value;
+// Math.round((evt.clientX - START_X_PIN_LEVEL) / (END_X_PIN_LEVEL - START_X_PIN_LEVEL) * 100));
+
+pinLevelEffect.addEventListener('mouseup', function () {
+  // window.pinLevel = mouseup.value;
+});
+
+var effectsItemClickHandler = function () {
+  // reset pin
+};
+
+for (var y = 0; y < effectsItem.length; y++) {
+  effectsItem[y].addEventListener('click', effectsItemClickHandler);
+}
