@@ -79,7 +79,7 @@ for (var j = 0; j < pictures.length; j++) {
 locationOfPicture.appendChild(fragment);
 
 var bigPicture = document.querySelector('.big-picture');
-bigPicture.classList.remove('hidden');
+// bigPicture.classList.remove('hidden'); TODO
 
 // функция для создания DOM-элемента комментария согласно html-разметке
 var createComment = function (el) {
@@ -117,8 +117,156 @@ var setItem = function (oldItem, newItem) {
   oldItem.querySelector('.social__comments').appendChild(fragmentForСomments);
 };
 
-// переопределяем атрибутыглавное картинки на 1й элемент массива
+// переопределяем атрибуты для главной картинки на 1й элемент массива
 setItem(bigPicture, pictures[0]);
 
 document.querySelector('.social__comment-count').classList.add('visually-hidden');
 document.querySelector('.comments-loader').classList.add('visually-hidden');
+
+var ESC_KEYCODE = 27;
+var ENTER_KEYCODE = 13;
+// var START_X_PIN_LEVEL = 600;
+// var END_X_PIN_LEVEL = 1050;
+
+var uploadOverlay = document.querySelector('.img-upload__overlay');
+var uploadFile = document.querySelector('#upload-file');
+var btnUploadCancel = document.querySelector('.img-upload__cancel');
+var pinLevelEffect = document.querySelector('.effect-level__pin');
+var pinLevelValue = document.querySelector('.effect-level__value');
+var effectsItem = document.querySelectorAll('.effects__item');
+
+var scaleButtons = document.querySelector('.img-upload__scale');
+var imgUploadPreview = document.querySelector('.img-upload__preview');
+var scaleValueButton = document.querySelector('.scale__control--value');
+
+// var effectsList = document.querySelector('.effects__list');
+// var noneEffect = effectsList.querySelector('#effect-none');
+// var chromeEffect = effectsList.querySelector('#effect-chrome');
+// var sepiaEffect = effectsList.querySelector('#effect-sepia');
+// var marvinEffect = effectsList.querySelector('#effect-marvin');
+// var phobosEffect = effectsList.querySelector('#effect-phobos');
+// var heatEffect = effectsList.querySelector('#effect-heat');
+
+// var inputHashtags = document.querySelector('.text__hashtags');
+
+var lib = {
+  'effects__preview--chrome': {
+    name: 'grayscale',
+    setPercent: function (val) {
+      return val / 100;
+    }
+  },
+  'effects__preview--sepia': {
+    name: 'sepia',
+    setPercent: function (val) {
+      return val / 100;
+    }
+  },
+  'effects__preview--marvin': {
+    name: 'invert',
+    setPercent: function (val) {
+      return val + '%';
+    }
+  },
+  'effects__preview--phobos': {
+    name: 'blur',
+    setPercent: function (val) {
+      return val * 0.03 + 'px';
+    },
+    min: 0,
+    max: '3px'
+  },
+  'effects__preview--heat': {
+    name: 'brightness',
+    setPercent: function (val) {
+      return val * 0.02 + 1;
+    }
+  }
+};
+
+var onPopupEscPress = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closePopup();
+  }
+};
+
+var openPopup = function () {
+  uploadOverlay.classList.remove('hidden');
+  document.addEventListener('keydown', onPopupEscPress);
+};
+
+var closePopup = function () {
+  uploadOverlay.classList.add('hidden');
+  document.removeEventListener('keydown', onPopupEscPress);
+  uploadFile.value = '';
+};
+
+uploadFile.addEventListener('change', function () {
+  openPopup();
+});
+
+btnUploadCancel.addEventListener('click', function () {
+  closePopup();
+});
+
+btnUploadCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_KEYCODE) {
+    closePopup();
+  }
+});
+
+scaleValueButton.value = '100%'; // ?
+
+scaleButtons.addEventListener('click', function (evt) {
+  var percent = parseInt(scaleValueButton.value, 10);
+
+  if (evt.target.matches('.scale__control--bigger')) {
+    percent += 25;
+    if (percent >= 100) {
+      percent = 100;
+    }
+  } else if (evt.target.matches('.scale__control--smaller')) {
+    percent -= 25;
+    if (percent < 25) {
+      percent = 25;
+    }
+  }
+
+  imgUploadPreview.style = 'transform:scale(' + percent / 100 + ')';
+  scaleValueButton.value = percent + '%';
+});
+
+
+// window.pinLevel = pinLevelValue.value;
+// Math.round((evt.clientX - START_X_PIN_LEVEL) / (END_X_PIN_LEVEL - START_X_PIN_LEVEL) * 100));
+pinLevelEffect.addEventListener('mouseup', function () {
+  // window.pinLevel = mouseup.value;
+});
+
+// изменение превью фото при нажатии на эффект
+var setPhotoEffectHandler = function (evt) {
+  if (evt.target.matches('.effects__preview')) {
+    var arrClassForPreviewPhoto = evt.target.className.split('  ');
+
+    // уровень эффекта cбрасывается до начального состояния
+    pinLevelValue.setAttribute('value', '100');
+
+    // скидываем предыдущие классы превью фото:
+    imgUploadPreview.classList = 'img-upload__preview';
+
+    // добаввляем превью фото класс эффекта из массива классов элемента на которое произошло нажатие:
+    arrClassForPreviewPhoto.forEach(function (item) {
+      if (item !== 'effects__preview') {
+        imgUploadPreview.classList.add(item);
+
+        if (item !== 'effects__preview--none') {
+          imgUploadPreview.style = 'filter:' + lib[item.value].name + '(' + lib[item.value].setPercent(pinLevelValue.value) + ')';
+        }
+      }
+    });
+  }
+};
+
+for (var y = 0; y < effectsItem.length; y++) {
+  effectsItem[y].addEventListener('click', setPhotoEffectHandler);
+}
