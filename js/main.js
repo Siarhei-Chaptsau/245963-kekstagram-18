@@ -138,6 +138,9 @@ var effectsItem = document.querySelectorAll('.effects__item');
 var scaleButtons = document.querySelector('.img-upload__scale');
 var imgUploadPreview = document.querySelector('.img-upload__preview');
 var scaleValueButton = document.querySelector('.scale__control--value');
+var slider = document.querySelector('.img-upload__effect-level');
+
+var inputHashtags = document.querySelector('.text__hashtags');
 
 // var effectsList = document.querySelector('.effects__list');
 // var noneEffect = effectsList.querySelector('#effect-none');
@@ -146,8 +149,6 @@ var scaleValueButton = document.querySelector('.scale__control--value');
 // var marvinEffect = effectsList.querySelector('#effect-marvin');
 // var phobosEffect = effectsList.querySelector('#effect-phobos');
 // var heatEffect = effectsList.querySelector('#effect-heat');
-
-// var inputHashtags = document.querySelector('.text__hashtags');
 
 var lib = {
   'effects__preview--chrome': {
@@ -215,9 +216,8 @@ btnUploadCancel.addEventListener('keydown', function (evt) {
   }
 });
 
-scaleValueButton.value = '100%'; // ?
-
-scaleButtons.addEventListener('click', function (evt) {
+// функция регуляции размера превью фото
+var setScaleValueHandler = function (evt) {
   var percent = parseInt(scaleValueButton.value, 10);
 
   if (evt.target.matches('.scale__control--bigger')) {
@@ -231,17 +231,24 @@ scaleButtons.addEventListener('click', function (evt) {
       percent = 25;
     }
   }
-
   imgUploadPreview.style = 'transform:scale(' + percent / 100 + ')';
   scaleValueButton.value = percent + '%';
-});
+};
 
+scaleButtons.addEventListener('click', setScaleValueHandler);
 
 // window.pinLevel = pinLevelValue.value;
 // Math.round((evt.clientX - START_X_PIN_LEVEL) / (END_X_PIN_LEVEL - START_X_PIN_LEVEL) * 100));
 pinLevelEffect.addEventListener('mouseup', function () {
   // window.pinLevel = mouseup.value;
 });
+
+// дефолтное значение размера превью фото
+scaleValueButton.setAttribute('value', '100%');
+scaleValueButton.value = '100%';
+
+// По дефолту слайдер скрывается - эффект 'Оригинал'
+slider.hidden = true;
 
 // изменение превью фото при нажатии на эффект
 var setPhotoEffectHandler = function (evt) {
@@ -250,6 +257,11 @@ var setPhotoEffectHandler = function (evt) {
 
     // уровень эффекта cбрасывается до начального состояния
     pinLevelValue.setAttribute('value', '100');
+
+    // размер превью фото по умолчанию
+    scaleValueButton.setAttribute('value', '100%');
+    scaleValueButton.value = '100%';
+    imgUploadPreview.style = '';
 
     // скидываем предыдущие классы превью фото:
     imgUploadPreview.classList = 'img-upload__preview';
@@ -260,7 +272,10 @@ var setPhotoEffectHandler = function (evt) {
         imgUploadPreview.classList.add(item);
 
         if (item !== 'effects__preview--none') {
-          imgUploadPreview.style = 'filter:' + lib[item.value].name + '(' + lib[item.value].setPercent(pinLevelValue.value) + ')';
+          slider.hidden = false;
+          imgUploadPreview.style = 'filter:' + lib[item].name + '(' + lib[item].setPercent(pinLevelValue.value) + ')';
+        } else {
+          slider.hidden = true;
         }
       }
     });
@@ -270,3 +285,31 @@ var setPhotoEffectHandler = function (evt) {
 for (var y = 0; y < effectsItem.length; y++) {
   effectsItem[y].addEventListener('click', setPhotoEffectHandler);
 }
+
+var validateHashtags = function () {
+  document.removeEventListener('keydown', onPopupEscPress);
+
+  var arrHashtags = inputHashtags.value.trim().toLowerCase().split(/\s+/);
+  var duplicatedHashtags = arrHashtags.sort().filter(function (item, l, array) {
+    return array[l - 1] && item === array[l - 1];
+  });
+
+  arrHashtags.filter(function (el, k, arr) {
+    if (el.length > 20) {
+      inputHashtags.setCustomValidity('Максимальная длина одного хэш-тега 19 символов');
+    } else if (el.length < 2) {
+      inputHashtags.setCustomValidity('Хэш-тег не может состоять только из одной решётки');
+    } else if (arr.length > 4) {
+      inputHashtags.setCustomValidity('Нельзя указать больше пяти хэш-тегов');
+    } else if (duplicatedHashtags.length) {
+      inputHashtags.setCustomValidity('Хэштеги не могут быть одинаковыми');
+    } else if (el.substring(0, 1) !== '#') {
+      inputHashtags.setCustomValidity('Хэш-тег начинается с символа #');
+    } else {
+      inputHashtags.setCustomValidity('');
+    }
+    return el;
+  });
+};
+
+inputHashtags.addEventListener('input', validateHashtags);
